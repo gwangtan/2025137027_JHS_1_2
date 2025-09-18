@@ -1,90 +1,82 @@
 using UnityEngine;
+using Cinemachine;
 
 public class PlayerController : MonoBehaviour
 {
-    // Movement settings
-    [Header("이동 설정")]
-    public float walkSpeed = 3f;
-    public float runSpeed = 6f;
-    public float rotationSpeed = 10;
-
-    // Attack settings
-    [Header("공격 설정")]
-    public float attackDuration = 0.8f;
-    public bool canMoveWhileAttacking = false;
-
-    // Components
-    [Header("컴포넌트")]
-    public Animator animator;
+    public float speed = 5f;
+    public float jumpPower = 5f;
+    public float gravity = -9.81f;
+    public CinemachineVirtualCamera virtualCam;
+    public float rotationSpeed = 10f;
+    private CinemachinePOV pov;
     private CharacterController controller;
-    private Camera playerCamera;
+    private Vector3 velocity;
+    private bool isGrounded;
+    public CInemachineSwitcher switcher;
 
-    // Current state
-    private float currentSpeed;
-    private bool isAttacking = false; // Check if attacking
 
-    // Start is called before the first frame update
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
-        playerCamera = Camera.main;
+        pov = virtualCam.GetCinemachineComponent<CinemachinePOV>(); // Virtual Camera의 POV 컴포넌트 가져오기
     }
 
-    // Update is called once per frame
     void Update()
     {
-        HandleMovement();
-        UpdateAnimator();
-    }
-
-    // Handles movement
-    void HandleMovement()
-    {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-
-        // When there is input from either
-        if (horizontal != 0 || vertical != 0)
+        // 땅에 닿아 있는지 확인
+        isGrounded = controller.isGrounded;
+        if (isGrounded && velocity.y < 0)
         {
-            // Set the direction the camera is facing as forward
-            Vector3 cameraForward = playerCamera.transform.forward;
-            Vector3 cameraRight = playerCamera.transform.right;
-            cameraForward.y = 0;
-            cameraRight.y = 0;
-            cameraForward.Normalize();
-            cameraRight.Normalize();
+            velocity.y = -2f; // 지면에 붙이기
+        }
 
-            // Set move direction
-            Vector3 moveDirection = cameraForward * vertical + cameraRight * horizontal;
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
 
-            // Change to run mode if Left Shift is pressed
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                currentSpeed = runSpeed;
-            }
-            else
-            {
-                currentSpeed = walkSpeed;
-            }
+        // 카메라 기준 방향 계산
+        Vector3 camForward = virtualCam.transform.forward;
+        camForward.y = 0;
+        camForward.Normalize();
 
-            // Character controller movement input
-            controller.Move(moveDirection * currentSpeed * Time.deltaTime);
+        Vector3 camRight = virtualCam.transform.right;
+        camRight.y = 0;
+        camRight.Normalize();
 
-            // Look in the direction of movement
-            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        Vector3 move = (camForward * z + camRight * x).normalized; // 이동 방향 = 카메라 forward/right 기준
+        
+        
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            speed = 10f;
+            virtualCam.m_Lens.FieldOfView = 80f;
         }
         else
         {
-            // Speed is 0 if not moving
-            currentSpeed = 0;
-        }
-    }
+            speed = 5;
+            virtualCam.m_Lens.FieldOfView = 60f;
 
-    void UpdateAnimator()
-    {
-        // Calculate based on max speed (runSpeed) from 0 to 1
-        float animatorSpeed = Mathf.Clamp01(currentSpeed / runSpeed);
-        animator.SetFloat("speed", animatorSpeed);
+        }
+
+        if (!switcher.usingFreeLook)
+        {
+            controller.Move(move * speed * Time.deltaTime);
+        }
+
+        float cameraYaw = pov.m_HorizontalAxis.Value; // 미우스 최종 회전값
+        Quaternion targetRot = Quaternion.Euler(0f, cameraYaw, 0f);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
+
+        // 점프
+        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+        {
+            velocity.y = jumpPower;
+        }
+
+        // 중력 적용
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+
+
     }
 }
