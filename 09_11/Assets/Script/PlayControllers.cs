@@ -19,6 +19,8 @@ public class PlayControllers : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+
         isGrounded = controller.isGrounded;
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");

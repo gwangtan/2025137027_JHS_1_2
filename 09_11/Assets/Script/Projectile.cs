@@ -8,6 +8,7 @@ public class Projectile : MonoBehaviour
 
     public float speed = 20f;
     public float lifeTime = 2f;
+    public int damage = 1;
 
     // Start is called before the first frame update
     void Start()
@@ -25,9 +26,11 @@ public class Projectile : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
-            Destroy(other.gameObject); // 적 오브젝트 파괴
-            Destroy(gameObject); // 투사체 파괴
+            Enemy enemy = other.GetComponent<Enemy>();
+            if (enemy != null) enemy.TakeDamage(damage);
 
+
+            Destroy(gameObject);
         }
 
     }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using Cinemachine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -13,17 +14,48 @@ public class PlayerController : MonoBehaviour
     private Vector3 velocity;
     private bool isGrounded;
     public CInemachineSwitcher switcher;
+    public Slider hpSlider;
 
+    public int maxHP = 100;
+    private int currentHP;
 
+    public void TakeDamage(int damage)
+    {
+        currentHP -= damage;
+        hpSlider.value = (float)currentHP / maxHP;
+
+        if (currentHP <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        Destroy(gameObject);
+    }
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
         pov = virtualCam.GetCinemachineComponent<CinemachinePOV>(); // Virtual Camera의 POV 컴포넌트 가져오기
+
+
+
+        currentHP = maxHP;
+        hpSlider.value = 1f;
     }
+
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            {
+                pov.m_HorizontalAxis.Value = transform.eulerAngles.y;
+                pov.m_VerticalAxis.Value = 0f;
+            }
+        }
         // 땅에 닿아 있는지 확인
         isGrounded = controller.isGrounded;
         if (isGrounded && velocity.y < 0)
