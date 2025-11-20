@@ -2,16 +2,17 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// @Unity 스크립트(자산 참조 1개)
 public class SlotItemPrefab : MonoBehaviour
 {
     public Image itemImage;
     public TextMeshProUGUI itemText;
 
-    public void ItemSetting(Sprite itemSprite, string txt)
+    public BlockType blockType;
+
+    public void ItemSetting(Sprite itemSprite, string txt, BlockType type)
     {
         itemImage.sprite = itemSprite;
         itemText.text = txt;
-
+        blockType = type;
     }
 }

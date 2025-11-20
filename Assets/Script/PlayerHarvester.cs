@@ -10,28 +10,60 @@ public class PlayerHarvester : MonoBehaviour
     private float _nextHitTime;
     private Camera _cam;
     public Inventory inventory;           // 플레이어 인벤 (없으면 자동 부착)
+    InventoryUI invenUI;
 
     void Awake()
     {
         _cam = Camera.main;
         if (inventory == null) inventory = gameObject.AddComponent<Inventory>();
+        invenUI = FindAnyObjectByType<InventoryUI>();
     }
 
     void Update()
     {
-        if (Input.GetMouseButton(0) && Time.time >= _nextHitTime)
-        {
-            _nextHitTime = Time.time + hitCooldown;
 
-            Ray ray = _cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)); // 화면 중앙
-            if (Physics.Raycast(ray, out var hit, rayDistance, hitMask))
+        if (invenUI.selectedIndex < 0)
+        {
+            if (Input.GetMouseButton(0) && Time.time >= _nextHitTime)
             {
-                var block = hit.collider.GetComponent<Block>();
-                if (block != null)
+                _nextHitTime = Time.time + hitCooldown;
+
+                Ray ray = _cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)); // 화면 중앙
+                if (Physics.Raycast(ray, out var hit, rayDistance, hitMask))
                 {
-                    block.Hit(toolDamage, inventory);
+                    var block = hit.collider.GetComponent<Block>();
+                    if (block != null)
+                    {
+                        block.Hit(toolDamage, inventory);
+                    }
                 }
             }
         }
+        else
+        {
+
+            if (Input.GetMouseButtonDown(0))
+            {
+
+                Ray ray = _cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+                if (Physics.Raycast(ray, out var hit, rayDistance, hitMask, QueryTriggerInteraction.Ignore))
+                {
+                    Vector3Int placePos = AdjacentCellOnHitFace(hit);
+
+                    BlockType selected = invenUI.GetInventorySlot();
+                    if (inventory.Consume(selected, 1))
+                    {
+                        FindAnyObjectByType<NoiseVoxelMap>().PlaceTile(placePos, selected);
+                    }
+                }
+            }
+        }
+    }
+
+    static Vector3Int AdjacentCellOnHitFace(in RaycastHit hit)
+    {
+        Vector3 baseCenter = hit. collider.transform.position;
+        Vector3 adjaCenter = baseCenter + hit.normal;
+        return Vector3Int. RoundToInt(adjaCenter);
     }
 }

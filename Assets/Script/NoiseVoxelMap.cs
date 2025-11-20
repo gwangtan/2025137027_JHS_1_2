@@ -6,7 +6,6 @@ public class NoiseVoxelMap : MonoBehaviour
     public GameObject blockPrefab;
     public GameObject lassPrefab;
     public GameObject waterPrefab;
-    public GameObject Diamond;
     // 참고 1개
     public int width = 20;
     // 참고 1개
@@ -41,30 +40,70 @@ public class NoiseVoxelMap : MonoBehaviour
                 for (int y = 0; y < h; y++)
                 {
                     if (y == h - 1)
-                        Place(lassPrefab, x, y, z);
+                        PlaceGrass(x, y, z);
                     else
-                        Place(blockPrefab, x, y, z);
+                        PlaceDirt( x, y, z);
                 }
 
                 for (int y = h; y < waterheight; y++)
                 {
-                    Place(waterPrefab, x, y, z);
+                    PlaceWater(x, y, z);
                 }
 
 
             }
         }
     }
+    public void PlaceTile(Vector3Int pos, BlockType type)
+    {
+        switch (type)
+        {
+            case BlockType.Dirt:
+                PlaceDirt(pos.x, pos.y, pos.z);
+                break;
+            case BlockType.Grass:
+                PlaceGrass(pos.x, pos.y, pos.z);
+                break;
+            case BlockType.Water:
+                PlaceWater(pos.x, pos.y, pos.z);
+                break;
+
+        }
+    }
 
     // 참고 1개
-    private void Place(GameObject Prefab, int x, int y, int z)
+    private void PlaceDirt( int x, int y, int z)
     {
-        var go = Instantiate(Prefab, new Vector3(x, y, z), Quaternion.identity, transform);
+        var go = Instantiate(blockPrefab, new Vector3(x, y, z), Quaternion.identity, transform);
         go.name = $"Dirt_{x}_{y}_{z}";
 
         var b = go.GetComponent<Block>() ?? go.AddComponent<Block>();
         b.type = BlockType.Dirt;
         b.maxHP = 3;
+        b.dropCount = 1;
+        b.mineable = true;
+    }
+
+    private void PlaceGrass(int x, int y, int z)
+    {
+        var go = Instantiate(blockPrefab, new Vector3(x, y, z), Quaternion.identity, transform);
+        go.name = $"Dirt_{x}_{y}_{z}";
+
+        var b = go.GetComponent<Block>() ?? go.AddComponent<Block>();
+        b.type = BlockType.Dirt;
+        b.maxHP = 3;
+        b.dropCount = 1;
+        b.mineable = true;
+    }
+
+    private void PlaceWater(int x, int y, int z)
+    {
+        var go = Instantiate(blockPrefab, new Vector3(x, y, z), Quaternion.identity, transform);
+        go.name = $"Dirt_{x}_{y}_{z}";
+
+        var b = go.GetComponent<Block>() ?? go.AddComponent<Block>();
+        b.type = BlockType.Dirt;
+        b.maxHP = 2;
         b.dropCount = 1;
         b.mineable = true;
     }
