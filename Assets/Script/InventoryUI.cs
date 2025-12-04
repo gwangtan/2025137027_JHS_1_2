@@ -14,6 +14,7 @@ public class InventoryUI : MonoBehaviour
     public Sprite dirtSprite;
     public Sprite grassSprite;
     public Sprite waterSprite;
+    public Sprite shovelSprite;
 
     public int selectedIndex = -1;
 
@@ -64,7 +65,7 @@ public class InventoryUI : MonoBehaviour
         slotParent[_idx].GetComponent<Image>().color = Color.yellow;
     }
 
-    public BlockType GetInventorySlot()
+    public ItemType GetInventorySlot()
     {
         return items[selectedIndex].GetComponent<SlotItemPrefab>().blockType;
     }
@@ -89,15 +90,18 @@ public class InventoryUI : MonoBehaviour
 
             switch (item.Key)
             {
-                case BlockType.Dirt:
+                case ItemType.Dirt:
                     sitem.ItemSetting(dirtSprite,"x" + item.Value.ToString(), item.Key);
                     
                     break;
-                case BlockType.Grass:
+                case ItemType.Grass:
                     sitem.ItemSetting(grassSprite, "x" + item.Value.ToString(), item.Key);
                     break;
-                case BlockType.Water:
+                case ItemType.Water:
                     sitem.ItemSetting(waterSprite, "x" + item.Value.ToString(), item.Key);
+                    break;
+                case ItemType.Shovel:
+                    sitem.ItemSetting(shovelSprite, "x" + item.Value.ToString(), item.Key);
                     break;
             }
             myIdx++;
